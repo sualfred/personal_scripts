@@ -1,0 +1,20 @@
+[Unit]
+Description=TVH WakeUp Service
+After=tvhwakeup.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/mnt/omv1/scripts/
+ExecStart=/mnt/omv1/scripts/tvhwakeup.sh
+ExecStop=/bin/kill -9 $MAINPID
+RestartSec=15
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+
