@@ -1,12 +1,14 @@
 [Unit]
 Description=TVH WakeUp Service
-After=tvhwakeup.service
+After=network-online.target tvheadend.service
+Requires=network-online.target tvheadend.service
 
 [Service]
 Type=simple
 User=root
 Group=root
 WorkingDirectory=/mnt/omv1/scripts/
+ExecStartPre=/bin/sleep 10
 ExecStart=/mnt/omv1/scripts/tvhwakeup.sh
 ExecStop=/bin/kill -9 $MAINPID
 RestartSec=15

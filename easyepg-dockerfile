@@ -1,0 +1,40 @@
+# Dockerfile for https://github.com/sunsettrack4/easyepg
+FROM debian
+ENV TERM=xterm \
+TZ=Europe/Berlin \
+DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y \
+locales \
+phantomjs \
+dialog \
+curl \
+wget \
+libxml2-utils \
+perl \
+perl-doc \
+jq \
+php \
+git \
+xml-twig-tools \
+unzip \
+make \
+build-essential \
+php-curl
+RUN curl -L http://cpanmin.us | perl - App::cpanminus && \
+cpanm install JSON && \
+cpanm install XML::Rules && \
+cpanm install XML::DOM && \
+cpanm install Data::Dumper && \
+cpanm install Time::Piece && \
+cpanm install Time::Seconds && \
+cpanm install DateTime && \
+cpanm install DateTime::Format::DateParse && \
+cpanm install utf8
+RUN mkdir ~/easyepg && \
+wget https://github.com/sunsettrack4/easyepg/archive/v0.3.7.zip && \
+unzip v0.3.7.zip && \
+mv /easyepg-0.3.7/* ~/easyepg/ && \
+rm -rf /easyepg-0.3.7 && \
+rm v0.3.7.zip && \
+chmod 0777 ~/easyepg && \
+chmod 0777 ~/easyepg/*

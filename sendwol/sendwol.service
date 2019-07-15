@@ -1,0 +1,21 @@
+[Unit]
+Description=SendWOL 
+After=sendwol.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/scripts/
+ExecStartPre=/bin/sleep 10
+ExecStart=/opt/scripts/sendwol.sh
+ExecStop=/bin/kill -9 $MAINPID
+RestartSec=15
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+

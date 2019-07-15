@@ -1,0 +1,20 @@
+[Unit]
+Description=Filebot Watchdog
+After=filebotwatchdog.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/mnt/omv1/scripts/
+ExecStart=/mnt/omv1/scripts/filebotwatchdog.sh
+ExecStop=/bin/kill -9 $MAINPID
+RestartSec=15
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+
