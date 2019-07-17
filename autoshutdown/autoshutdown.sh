@@ -1,23 +1,28 @@
 #!/bin/bash
-
-#=======================================================================
-#
-#          FILE:	autoshutdown.sh
-#
-#         USAGE:	copy this script to /usr/sbin and the config-file to /etc
-#
-#   DESCRIPTION:	shuts down a PC/Server - variable options
-#
-#  REQUIREMENTS:  	Debian / Ubuntu-based system
-#
-#          BUGS:  	if you find any: https://github.com/OpenMediaVault-Plugin-Developers/openmediavault-autoshutdown
-#
-#        AUTHOR:	Solo0815 - R. Lindlein (Ubuntu-Port, OMV-Changes), it should work on any Debain-based System, too
-#					based on autoshutdown.sh v0.7.008 by chrikai, see:
-#					https://sourceforge.net/apps/phpbb/freenas/viewtopic.php?f=12&t=2158&start=60
-#=======================================================================
-
-# Changelog:	see extra file!
+# Install following packages
+# apt install iostat
+# apt install pm-utils
+######## CONFIG VARIABLES ########
+ENABLE="true"
+CYCLES=30
+SLEEP=60
+RANGE=""
+SHUTDOWNCOMMAND="shutdown -h now"
+CHECKCLOCKACTIVE="true"
+UPHOURS="10..22"
+NSOCKETNUMBERS="8920"
+ULDLCHECK="true"
+ULDLRATE=100
+LOADAVERAGECHECK="true"
+LOADAVERAGE=40
+HDDIOCHECK="true"
+HDDIO_RATE=401
+CHECK_SAMBA="false"
+CHECK_CLI="false"
+SYSLOG="true"
+VERBOSE="false"
+FAKE="false"
+######## //CONFIG VARIABLES ########
 
 ######## VARIABLE DEFINITION ########
 RESULT=0               # declare reusable RESULT variable to check function return values
@@ -39,7 +44,7 @@ CTOPPARAM="-b -d 1 -n 1"         # define common parameters for the top command 
 STOPPARAM="-i $CTOPPARAM"   # add specific parameters for the top command line  "-i $CTOPPARAM" (Debian/Ubuntu)
 
 # tmp-directory
-TMPDIR="/tmp/autoshutdown"
+TMPDIR="/home/n4pl/scripts/autoshutdown/tmp"
 
 ######## FUNCTION DECLARATION ########
 
@@ -1370,13 +1375,13 @@ logger -s -t "logger: $(basename "$0" | sed 's/\.sh$//g')[$$]" -p $FACILITY.info
 logger -s -t "logger: $(basename "$0" | sed 's/\.sh$//g')[$$]" -p $FACILITY.info "INFO: ' XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'"
 logger -s -t "logger: $(basename "$0" | sed 's/\.sh$//g')[$$]" -p $FACILITY.info "INFO: ' X Version: $VERSION'"
 logger -s -t "logger: $(basename "$0" | sed 's/\.sh$//g')[$$]" -p $FACILITY.info "INFO: ' Initialize logging to $FACILITY'"
-if [ -f /etc/autoshutdown.conf ]; then
-	. /etc/autoshutdown.conf
-	_log "INFO: /etc/autoshutdown.conf loaded"
-else
-	_log "WARN: cfg-File not found! Please check Path /etc for autoshutdown.conf"
-	exit 1
-fi
+# if [ -f autoshutdown.conf ]; then
+# 	. autoshutdown.conf
+# 	_log "INFO: /etc/autoshutdown.conf loaded"
+# else
+# 	_log "WARN: cfg-File not found! Please check Path /etc for autoshutdown.conf"
+# 	exit 1
+# fi
 if [ "$VERBOSE" = "true" ]; then
 	DEBUG="true"
 else
@@ -1434,12 +1439,6 @@ if $DEBUG ; then
 	_log "DEBUG: LOADAVERAGECHECK: $LOADAVERAGECHECK"
 	_log "DEBUG: LOADAVERAGE: $LOADAVERAGE"
 	_log "DEBUG: TMPDIR: $TMPDIR"
-	_log "DEBUG: PLUGINCHECK: $PLUGINCHECK"
-	# List all PlugIns
-	_log "DEBUG: PlugIns found in /etc/autoshutdown.d:"
-	for ASD_plugin_firstcheck in /etc/autoshutdown.d/*; do
-		_log "DEBUG: Plugin: $ASD_plugin_firstcheck"
-	done
 fi   # > if $DEBUG ;then
 _log "INFO:---------------- script started ----------------------"
 _log "INFO: ${CYCLES} test cycles until shutdown is issued."
@@ -1476,7 +1475,7 @@ if [ "$FAKE" = "true" ]; then
 	_log "INFO: FAKE-Mode in on, dont't wait for first check"
 else
 	_log "INFO: Waiting 5 min until the first check"
-	sleep 5m	# or: sleep 300
+	sleep 1s	# or: sleep 300
 fi
 for NICNR_START in $(seq 1 $NICNR); do
 	# if NIC is set (not empty) then check IPs connections, else skip it
