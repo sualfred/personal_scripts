@@ -79,7 +79,7 @@ do
                 if ! [ -f "$DIR/$FILENAME-trailer.mp4" ] || [ $OVERWRITE = "true" ]; then
 
                         #Get TheMovieDB ID from NFO
-			TMDBID=$(xmlstarlet sel -t -v "movie/tmdbid" "$DIR/$FILENAME.nfo")
+			TMDBID=$(xmllint --xpath "//movie/tmdbid/text()" "$DIR/$FILENAME.nfo")
 
                         log ""
                         log "Movie Path: $DIR"
