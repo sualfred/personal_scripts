@@ -5,7 +5,7 @@
 #################################
 
 #Search this paths
-PATHS=( "/sharedfolders/share/filme" "/sharedfolders/share/HDR/filme" )
+PATHS=( "/symlinks/share/share/filme" "/symlinks/share/share/HDR/filme" )
 
 #Your TheMovieDB API
 API=867ff90cfaeef855e39cf1fb3f56edf4
@@ -17,26 +17,26 @@ LANGUAGE=de
 OVERWRITE=false
 
 #Custom path to store the log files. Uncomment this line and change the path. By default the working directory is going to be used.
-LOGPATH="/sharedfolders/share"
+LOGPATH="/symlinks/share/share/scripts"
 
 #################################
 
 #Functions
 downloadTrailer(){
         DL=$(youtube-dl -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best"  "https://www.youtube.com/watch?v=$ID" -o "$DIR/$FILENAME-trailer.%(ext)s" --restrict-filenames --no-continue)
-	log "$DL"
+        log "$DL"
 
-	if [ -z "$(echo "$DL" | grep "100.0%")" ]; then
-		missing ""
-		missing "Error: Downloading failed - $FILENAME - $DIR - TheMovideDB: https://www.themoviedb.org/movie/$TMDBID - YouTube: https://www.youtube.com/watch?v=$ID"
-		missing "------------------"
-		missing "$DL"
-		missing "------------------"
-		missing ""
+        if [ -z "$(echo "$DL" | grep "100.0%")" ]; then
+                missing ""
+                missing "Error: Downloading failed - $FILENAME - $DIR - TheMovideDB: https://www.themoviedb.org/movie/$TMDBID - YouTube: https://www.youtube.com/watch?v=$ID"
+                missing "------------------"
+                missing "$DL"
+                missing "------------------"
+                missing ""
         else
                 #Update file modification date
                 touch "$DIR/$FILENAME-trailer.mp4"
-	fi
+        fi
 }
 
 log(){
@@ -55,7 +55,7 @@ rm "$LOGPATH/trailerdl-error.log" &>/dev/null
 
 #Use manually provided language code (optional)
 if [ "$1" = "force" ]; then
-	OVERWRITE=true
+        OVERWRITE=true
 elif ! [ -z "$1" ]; then
         LANGUAGE="$1"
 fi
@@ -72,14 +72,14 @@ fi
 #Walk defined paths and search for movies without existing local trailer
 for i in "${PATHS[@]}"
 do
-	find "$i" -mindepth 1 -maxdepth 2 -name '*.nfo*' -printf "%h\n" | sort -u | while read DIR
+        find "$i" -mindepth 1 -maxdepth 2 -name '*.nfo*' -printf "%h\n" | sort -u | while read DIR
         do
-		FILENAME=$(ls "$DIR" | egrep '\.nfo$' | sed s/".nfo"//g)
+                FILENAME=$(ls "$DIR" | egrep '\.nfo$' | sed s/".nfo"//g | sed "\/-trailer$/d")
 
                 if ! [ -f "$DIR/$FILENAME-trailer.mp4" ] || [ $OVERWRITE = "true" ]; then
 
                         #Get TheMovieDB ID from NFO
-                        TMDBID=$(awk -F "[><]" '/tmdbid/{print $3}' "$DIR/$FILENAME.nfo" | awk -F'[ ]' '{print $1}')
+			TMDBID=$(xmlstarlet sel -t -v "movie/tmdbid" "$DIR/$FILENAME.nfo")
 
                         log ""
                         log "Movie Path: $DIR"
@@ -90,11 +90,12 @@ do
                                 log "TheMovieDB: https://www.themoviedb.org/movie/$TMDBID"
 
                                 #Get trailer YouTube ID from themoviedb.org
-                                JSON=($(curl -s "http://api.themoviedb.org/3/movie/$TMDBID/videos?api_key=$API&language=$LANGUAGE" | jq '.results | sort_by(-.size)' | jq -r '.[] | select(.type=="Trailer") | .key'))
-                                ID="${JSON[0]}"
+                                JSON=($(curl "http://api.themoviedb.org/3/movie/$TMDBID/videos?api_key=$API&language=$LANGUAGE" | jq '.results | sort_by(-.size)' | jq -r '.[] | select(.type=="Trailer") | .key'))
+                                #JSON=($(curl "http://api.themoviedb.org/3/movie/$TMDBID/videos?api_key=$API&language=$LANGUAGE" | jq '.results | sort_by(-.size)' | jq -r '.[] | select(.type=="Trailer")'))
+				ID="${JSON[0]}"
 
                                 if ! [ -z "$ID" ]; then
-                                		#Start download
+                                                #Start download
                                         log "YouTube: https://www.youtube.com/watch?v=$ID"
                                         downloadTrailer
 
@@ -105,7 +106,7 @@ do
                                 fi
 
                         else
-                        		log "TheMovieDB: n/a"
+                                        log "TheMovieDB: n/a"
                                 missing "Error: Missing TheMovieDB ID - $FILENAME - $DIR"
                         fi
 
